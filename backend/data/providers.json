@@ -2,11 +2,12 @@
   {
     "id": "starclippers",
     "name": "Star Clippers",
-    "url": "https://api.starclippers.com/xml",
+    "rateUrl": "https://www.starclippers.com/accessdata/rate_fr.xml?access_token=1234",
+    "itineraryUrl": "https://www.starclippers.com/accessdata/itenary_fr.xml?access_token=1234",
     "type": "xml",
     "enabled": true,
-    "lastSync": "2026-04-21T13:17:39.835Z",
-    "count": 4
+    "lastSync": null,
+    "count": 0
   },
   {
     "id": "costa",

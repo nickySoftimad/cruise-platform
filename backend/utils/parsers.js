@@ -29,15 +29,77 @@ const normalizeCruise = (data, provider) => {
  * Provider-Specific Parsers
  */
 
-const parseStarClippers = (xmlData) => {
-  // Logic to parse Star Clippers XML
-  // Using fast-xml-parser output...
-  return (xmlData.Cruises?.Cruise || []).map(item => normalizeCruise(item, 'Star Clippers'));
+// High-quality default images for a premium look
+const DEFAULT_CRUISE_IMAGES = [
+  "https://images.unsplash.com/photo-1548574505-12c011f42698?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&q=80&w=1200"
+];
+
+const getRandomDefaultImage = () => {
+  return DEFAULT_CRUISE_IMAGES[Math.floor(Math.random() * DEFAULT_CRUISE_IMAGES.length)];
+};
+
+const parseStarClippers = (rateXml, itineraryXml) => {
+  if (!itineraryXml) return [];
+
+  // 1. Map rates by cruise_code
+  const ratesMap = {};
+  const rateList = rateXml?.root?.item || [];
+  (Array.isArray(rateList) ? rateList : [rateList]).forEach(rate => {
+    const code = rate.cruise_code;
+    if (code && !ratesMap[code]) {
+      ratesMap[code] = parseFloat(rate.price) || 0;
+    }
+  });
+
+  // 2. Group itineraries by cruise_code
+  const cruiseGroups = {};
+  const itineraryItems = itineraryXml?.root?.item || [];
+  
+  (Array.isArray(itineraryItems) ? itineraryItems : [itineraryItems]).forEach(item => {
+    const code = item.cruise_code;
+    if (!code) return;
+
+    if (!cruiseGroups[code]) {
+      // Pick a random image for the cruise or use ship-specific if we had mapping
+      const randomImg = getRandomDefaultImage();
+      
+      cruiseGroups[code] = {
+        id: code,
+        cruise_code: code,
+        name: item.itinerary,
+        ship: item.ship,
+        destination: item.itinerary.split(' à ').pop() || "Méditerranée",
+        departureDate: item.arrival_date,
+        price: ratesMap[code] || 0,
+        itinerary: [],
+        itineraryDetailed: [],
+        image: randomImg // Use high-quality random image as primary
+      };
+    }
+
+    cruiseGroups[code].itinerary.push(item.port_name);
+    
+    cruiseGroups[code].itineraryDetailed.push({
+      day: item.day,
+      date: item.arrival_date,
+      port: item.port_name,
+      description: item.port_description,
+      // Keep the real port image as a fallback in the detailed view if needed
+      image: item.port_image ? `https://www.starclippers.com/${item.port_image}` : ""
+    });
+  });
+
+  return Object.values(cruiseGroups).map(cruise => normalizeCruise(cruise, 'Star Clippers'));
 };
 
 const parseCosta = (xmlData) => {
   // Logic for Costa (SOAP/XML)
-  return (xmlData.Cruises?.Cruise || []).map(item => normalizeCruise(item, 'Costa'));
+  const list = xmlData.Cruises?.Cruise || [];
+  return (Array.isArray(list) ? list : [list]).map(item => normalizeCruise(item, 'Costa'));
 };
 
 const parseCroisiEurope = (csvData) => {
@@ -47,7 +109,8 @@ const parseCroisiEurope = (csvData) => {
 
 const parseAraNui = (xmlData) => {
   // Logic for Ara Nui
-  return []; // Placeholder
+  const list = xmlData.Cruises?.Cruise || [];
+  return (Array.isArray(list) ? list : [list]).map(item => normalizeCruise(item, 'Ara Nui'));
 };
 
 module.exports = {

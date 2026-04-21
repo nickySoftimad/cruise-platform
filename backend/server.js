@@ -317,24 +317,73 @@ const MOCK_CRUISES = [
   }
 ];
 
+const syncProviderData = async (provider) => {
+  try {
+    console.log(`Syncing provider: ${provider.name}...`);
+    
+    if (provider.id === 'starclippers') {
+      const [rateRes, itineraryRes] = await Promise.all([
+        axios.get(provider.rateUrl, { timeout: 10000 }),
+        axios.get(provider.itineraryUrl, { timeout: 10000 })
+      ]);
+      
+      const rateObj = xmlParser.parse(rateRes.data);
+      const itineraryObj = xmlParser.parse(itineraryRes.data);
+      
+      return parseStarClippers(rateObj, itineraryObj);
+    } 
+    
+    // Default single URL XML/CSV handling
+    if (!provider.url) return [];
+    
+    const response = await axios.get(provider.url, { timeout: 10000 });
+    
+    if (provider.type === 'xml') {
+      const xmlObj = xmlParser.parse(response.data);
+      if (provider.id === 'costa') return parseCosta(xmlObj);
+      if (provider.id === 'aranui') return parseAraNui(xmlObj);
+      return [];
+    } else if (provider.type === 'csv') {
+      return parseCroisiEurope(response.data);
+    }
+    
+    return [];
+  } catch (error) {
+    console.error(`Error syncing ${provider.name}:`, error.message);
+    return [];
+  }
+};
+
 app.get('/api/cruises', async (req, res) => {
   let allCruises = cache.get('all_cruises');
 
   if (!allCruises) {
-    // In production: fetch from real provider URLs and normalize
-    // For now: serve the rich mock dataset
-    allCruises = MOCK_CRUISES;
-    cache.set('all_cruises', allCruises);
-
-    // Update sync status for all active providers
     const providers = getProviders();
-    const providerNames = [...new Set(MOCK_CRUISES.map(c => c.provider))];
-    providers.forEach(p => {
-      if (providerNames.some(name => name.toLowerCase().includes(p.name.split(' ')[0].toLowerCase()))) {
-        p.lastSync = new Date().toISOString();
-        p.count = MOCK_CRUISES.filter(c => c.provider === p.name).length;
-      }
-    });
+    const enabledProviders = providers.filter(p => p.enabled);
+    
+    console.log(`Cache empty. Starting sync for ${enabledProviders.length} providers...`);
+    
+    const results = await Promise.all(enabledProviders.map(async (p) => {
+      const countBefore = p.count;
+      const data = await syncProviderData(p);
+      
+      // Update provider stats
+      p.lastSync = new Date().toISOString();
+      p.count = data.length;
+      
+      return data;
+    }));
+
+    allCruises = results.flat();
+    
+    // Fallback to mock data if all real providers returned nothing 
+    // (helps with initial setup without valid tokens)
+    if (allCruises.length === 0) {
+      console.log("No real data fetched. Falling back to MOCK_CRUISES.");
+      allCruises = MOCK_CRUISES;
+    }
+    
+    cache.set('all_cruises', allCruises);
     saveProviders(providers);
   }
 
