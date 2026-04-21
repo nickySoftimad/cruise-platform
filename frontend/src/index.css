@@ -1452,8 +1452,10 @@ button, input, select { font-family: var(--sans); }
   letter-spacing: 1.5px;
 }
 
-.btn-load-more:active {
-  transform: translateY(-1px);
+.btn-load-more.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  letter-spacing: 1.5px;
 }
 
 /* Provider Chips */

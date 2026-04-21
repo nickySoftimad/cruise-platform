@@ -59,8 +59,14 @@ function CruiseListing() {
     return filteredCruises.slice(0, visibleCount);
   }, [filteredCruises, visibleCount]);
 
+  const [isMoreLoading, setIsMoreLoading] = useState(false);
+
   const handleLoadMore = () => {
-    setVisibleCount(prev => prev + 9);
+    setIsMoreLoading(true);
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 9);
+      setIsMoreLoading(false);
+    }, 400); // Smooth transition delay
   };
 
   return (
@@ -146,18 +152,29 @@ function CruiseListing() {
           </div>
         ) : (
           <>
-            <motion.div layout className="cruise-grid">
-              <AnimatePresence mode="popLayout">
-                {displayedCruises.map(cruise => (
-                  <CruiseCard key={cruise.id} cruise={cruise} />
+            <div className="cruise-grid">
+              <AnimatePresence>
+                {displayedCruises.map((cruise, idx) => (
+                  <motion.div
+                    key={cruise.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: (idx % 9) * 0.05 }}
+                  >
+                    <CruiseCard cruise={cruise} />
+                  </motion.div>
                 ))}
               </AnimatePresence>
-            </motion.div>
+            </div>
 
             {visibleCount < filteredCruises.length && (
               <div className="load-more-container">
-                <button className="btn-load-more" onClick={handleLoadMore}>
-                  Charger plus d'itinéraires
+                <button 
+                  className={`btn-load-more ${isMoreLoading ? 'loading' : ''}`} 
+                  onClick={handleLoadMore}
+                  disabled={isMoreLoading}
+                >
+                  {isMoreLoading ? 'Chargement...' : 'Charger plus d\'itinéraires'}
                 </button>
               </div>
             )}

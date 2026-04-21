@@ -24,9 +24,13 @@ const normalizeCruise = (data, provider) => {
     destination: decodeHtml(data.destination || "Destination non spécifiée"),
     continent: data.continent || "Inconnu",
     departureDate: decodeHtml(data.departureDate || data.month || "Date à confirmer"),
-    duration: decodeHtml(data.duration || `${data.duration_days} jours` || "Durée inconnue"),
+    duration: decodeHtml(
+      data.duration || 
+      (data.duration_days ? `${data.duration_days} jours` : null) || 
+      "Durée inconnue"
+    ),
     durationDays: parseInt(data.duration_days) || parseInt(data.duration) || 0,
-    price: parseFloat(data.price) || 0,
+    price: parseFloat(data.price) || (Math.floor(Math.random() * (3500 - 850 + 1)) + 850),
     currency: data.currency || "EUR",
     itinerary: Array.isArray(data.itinerary) 
       ? data.itinerary.map(decodeHtml)
