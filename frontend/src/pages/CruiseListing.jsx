@@ -9,6 +9,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
 function CruiseListing() {
   const [cruises, setCruises] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(9);
   const [filters, setFilters] = useState({
     continent: 'All',
     provider: 'All',
@@ -23,6 +24,11 @@ function CruiseListing() {
       .catch(e => console.error(e))
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset pagination when filters or sort changes
+  useEffect(() => {
+    setVisibleCount(9);
+  }, [filters, sort]);
 
   const continents = useMemo(() =>
     ['All', ...new Set(cruises.map(c => c.continent))], [cruises]);
@@ -49,13 +55,21 @@ function CruiseListing() {
     return list;
   }, [filters, sort, cruises]);
 
+  const displayedCruises = useMemo(() => {
+    return filteredCruises.slice(0, visibleCount);
+  }, [filteredCruises, visibleCount]);
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 9);
+  };
+
   return (
     <>
       {/* HERO */}
       <section className="hero-section">
         <div className="hero-bg" />
         <div className="hero-content">
-          <p className="hero-eyebrow">Agence de voyage sur mesure</p>
+          <p className="hero-eyebrow">Expertise & Passion</p>
           <motion.h1
             className="hero-title"
             initial={{ opacity: 0, y: 28 }}
@@ -93,26 +107,14 @@ function CruiseListing() {
         <div className="section-header">
           <p className="section-label">Nos Compagnies Partenaires</p>
           <h2>Consulter nos croisières</h2>
-          {/* Provider quick links */}
+          
           {!loading && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: '1rem 0' }}>
               {providers.filter(p => p !== 'All').map(p => (
                 <button
                   key={p}
                   onClick={() => setFilters(prev => ({ ...prev, provider: prev.provider === p ? 'All' : p }))}
-                  style={{
-                    padding: '5px 14px',
-                    fontSize: '0.72rem',
-                    fontFamily: 'var(--sans)',
-                    fontWeight: 600,
-                    border: '1.5px solid',
-                    borderRadius: '20px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    borderColor: filters.provider === p ? 'var(--blue)' : 'var(--border)',
-                    background: filters.provider === p ? 'var(--gradient-nav)' : 'white',
-                    color: filters.provider === p ? 'white' : 'var(--text-mid)',
-                  }}
+                  className={`provider-chip ${filters.provider === p ? 'active' : ''}`}
                 >
                   {p}
                 </button>
@@ -143,13 +145,23 @@ function CruiseListing() {
             </span>
           </div>
         ) : (
-          <motion.div layout className="cruise-grid">
-            <AnimatePresence mode="popLayout">
-              {filteredCruises.map(cruise => (
-                <CruiseCard key={cruise.id} cruise={cruise} />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <>
+            <motion.div layout className="cruise-grid">
+              <AnimatePresence mode="popLayout">
+                {displayedCruises.map(cruise => (
+                  <CruiseCard key={cruise.id} cruise={cruise} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {visibleCount < filteredCruises.length && (
+              <div className="load-more-container">
+                <button className="btn-load-more" onClick={handleLoadMore}>
+                  Charger plus d'itinéraires
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
     </>

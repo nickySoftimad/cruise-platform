@@ -1422,6 +1422,66 @@ button, input, select { font-family: var(--sans); }
   border-radius: 20px;
 }
 
+/* Pagination & Load More */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+  margin-top: 2rem;
+}
+
+.btn-load-more {
+  padding: 1rem 2.5rem;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--gradient-nav);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.btn-load-more:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  letter-spacing: 1.5px;
+}
+
+.btn-load-more:active {
+  transform: translateY(-1px);
+}
+
+/* Provider Chips */
+.provider-chip {
+  padding: 6px 16px;
+  font-size: 0.75rem;
+  font-family: var(--sans);
+  font-weight: 600;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.provider-chip:hover {
+  border-color: var(--blue-dark);
+  color: var(--blue-dark);
+}
+
+.provider-chip.active {
+  background: var(--gradient-nav);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 12px rgba(8, 25, 45, 0.2);
+}
+
 .status-badge.active { background: #e6f7ef; color: #1a8754; }
 .status-badge.inactive { background: #fdf2f2; color: #dc3545; }
 

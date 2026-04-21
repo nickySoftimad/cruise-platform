@@ -1,4 +1,16 @@
 /**
+ * Simple HTML entities decoder for common entities (like &#xE0;)
+ */
+const decodeHtml = (str) => {
+  if (!str || typeof str !== 'string') return str || "";
+  return str
+    .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#([0-9]+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+};
+
+/**
  * Standard Normalize Function
  * Normalizes cruise data from various formats (XML/SOAP/CSV) into a unified schema.
  */
@@ -6,22 +18,26 @@
 const normalizeCruise = (data, provider) => {
   return {
     id: data.id || `${provider}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    provider: provider,
-    name: data.name || data.title || "Croisière sans titre",
-    ship: data.ship || "Navire inconnu",
-    destination: data.destination || "Destination non spécifiée",
+    provider: provider || "Inconnu",
+    name: decodeHtml(data.name || data.title || "Croisière sans titre"),
+    ship: decodeHtml(data.ship || "Navire inconnu"),
+    destination: decodeHtml(data.destination || "Destination non spécifiée"),
     continent: data.continent || "Inconnu",
-    departureDate: data.departureDate || data.month || "Date à confirmer",
-    duration: data.duration || `${data.duration_days} jours` || "Durée inconnue",
-    durationDays: data.duration_days || parseInt(data.duration) || 0,
+    departureDate: decodeHtml(data.departureDate || data.month || "Date à confirmer"),
+    duration: decodeHtml(data.duration || `${data.duration_days} jours` || "Durée inconnue"),
+    durationDays: parseInt(data.duration_days) || parseInt(data.duration) || 0,
     price: parseFloat(data.price) || 0,
     currency: data.currency || "EUR",
     itinerary: Array.isArray(data.itinerary) 
-      ? data.itinerary 
-      : (typeof data.itinerary === 'string' ? data.itinerary.split(' - ') : []),
+      ? data.itinerary.map(decodeHtml)
+      : (typeof data.itinerary === 'string' ? data.itinerary.split(' - ').map(decodeHtml) : []),
     image: data.image || "https://images.unsplash.com/photo-1548574505-12c011f42698?auto=format&fit=crop&q=80&w=800",
-    description: data.description || "Une expérience unique en mer.",
-    itineraryDetailed: data.itineraryDetailed || [] // Day-by-day program
+    description: decodeHtml(data.description || "Une expérience unique en mer."),
+    itineraryDetailed: (data.itineraryDetailed || []).map(item => ({
+      ...item,
+      port: decodeHtml(item.port),
+      description: decodeHtml(item.description)
+    }))
   };
 };
 
