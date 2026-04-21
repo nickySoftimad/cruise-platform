@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Link, NavLink } from 'react-router-dom';
 import { Anchor, Globe, ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import CruiseListing from './pages/CruiseListing';
@@ -5,7 +6,7 @@ import CruiseDetail from './pages/CruiseDetail';
 import AdminPanel from './pages/AdminPanel';
 
 function App() {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="app-wrapper">
