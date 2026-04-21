@@ -18,7 +18,7 @@ const seed = async () => {
       await Provider.findOneAndUpdate(
         { id: p.id },
         p,
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
     }
 

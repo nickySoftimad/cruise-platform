@@ -36,7 +36,7 @@ const updateProviderStats = async (providerId, count) => {
   await Provider.findOneAndUpdate(
     { id: providerId },
     { lastSync: new Date(), count: count },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };
 
@@ -74,7 +74,7 @@ const syncProviderData = async (provider) => {
         await Cruise.findOneAndUpdate(
           { externalId: cruiseData.id || cruiseData.externalId, provider: provider.id },
           { ...cruiseData, externalId: cruiseData.id || cruiseData.externalId, provider: provider.id },
-          { upsert: true, new: true }
+          { upsert: true, returnDocument: 'after' }
         );
       }
     }

@@ -50,7 +50,7 @@ async function syncStarClippers() {
       await Cruise.findOneAndUpdate(
         { externalId: cruise.id, provider: 'Star Clippers' },
         { ...cruise, externalId: cruise.id, provider: 'Star Clippers' },
-        { upsert: true, new: true, returnDocument: 'after' }
+        { upsert: true, returnDocument: 'after' }
       );
       count++;
     }
