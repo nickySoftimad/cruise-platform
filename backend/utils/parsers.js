@@ -162,13 +162,28 @@ const parseStarClippersCSV = (ratesJson, itinerariesJson) => {
     }
   });
 
-  // 2. Map itineraries to cruises
+  // 2. Map itineraries and images to cruises
   itinerariesJson.forEach(row => {
     const code = row.cruise_code;
     const cruise = cruiseDataMap[code];
     if (cruise) {
       if (row.port_name && !cruise.itinerary.includes(row.port_name)) {
         cruise.itinerary.push(row.port_name);
+      }
+      
+      // Update cruise name if it's currently generic and CSV has a better one
+      if (row.itinerary && (!cruise.name || cruise.name === "Croisière Grand Luxe")) {
+        cruise.name = row.itinerary;
+      }
+
+      // Use itinerary_image as the main cruise image if available
+      if (row.itinerary_image && (!cruise.image || cruise.image.includes('unsplash'))) {
+        cruise.image = `https://www.starclippers.com/${row.itinerary_image}`;
+      }
+
+      // Save the map image
+      if (row.itinerary_map && !cruise.itineraryMap) {
+        cruise.itineraryMap = `https://www.starclippers.com/${row.itinerary_map}`;
       }
       
       cruise.itineraryDetailed.push({

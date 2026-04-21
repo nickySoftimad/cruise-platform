@@ -39,6 +39,14 @@ async function syncStarClippers() {
       relax_column_count: true
     });
 
+    // DEBUG: Log headers to see exact column names
+    if (ratesJson.length > 0) {
+      console.log('Rate CSV Headers:', Object.keys(ratesJson[0]).join(', '));
+    }
+    if (itinerariesJson.length > 0) {
+      console.log('Itinerary CSV Headers:', Object.keys(itinerariesJson[0]).join(', '));
+    }
+
     console.log(`Found ${ratesJson.length} rate rows and ${itinerariesJson.length} itinerary rows.`);
 
     const normalizedCruises = parseStarClippersCSV(ratesJson, itinerariesJson);

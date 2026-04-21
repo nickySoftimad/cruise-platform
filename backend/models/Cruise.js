@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const ItineraryItemSchema = new mongoose.Schema({
   day: Number,
   port: String,
-  description: String
+  description: String,
+  image: String
 });
 
 const CabinSchema = new mongoose.Schema({
@@ -24,6 +25,7 @@ const CruiseSchema = new mongoose.Schema({
   price: Number,
   currency: { type: String, default: 'EUR' },
   image: String,
+  itineraryMap: String,
   description: String,
   itinerary: [String],
   itineraryDetailed: [ItineraryItemSchema],
