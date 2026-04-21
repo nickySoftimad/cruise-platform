@@ -128,6 +128,61 @@ const parseStarClippers = (rateXml, itineraryXml) => {
   return Object.values(cruiseGroups).map(cruise => normalizeCruise(cruise, 'Star Clippers'));
 };
 
+const parseStarClippersCSV = (ratesJson, itinerariesJson) => {
+  if (!ratesJson || !itinerariesJson) return [];
+
+  // 1. Group rates and pick lowest price per cruise_code
+  const cruiseDataMap = {};
+  
+  ratesJson.forEach(row => {
+    const code = row.cruise_code;
+    if (!code) return;
+
+    const price = parseFloat(row.brochure_price) || 0;
+    
+    if (!cruiseDataMap[code]) {
+      cruiseDataMap[code] = {
+        id: code,
+        name: row.itinerary,
+        ship: row.ship,
+        destination: row.destination || "Méditerranée",
+        continent: row.region || "Europe",
+        departureDate: row.sdate,
+        durationDays: parseInt(row.nights),
+        price: price,
+        itinerary: [],
+        itineraryDetailed: [],
+        image: getRandomDefaultImage()
+      };
+    } else {
+      // Keep cheapest price
+      if (price > 0 && (cruiseDataMap[code].price === 0 || price < cruiseDataMap[code].price)) {
+        cruiseDataMap[code].price = price;
+      }
+    }
+  });
+
+  // 2. Map itineraries to cruises
+  itinerariesJson.forEach(row => {
+    const code = row.cruise_code;
+    const cruise = cruiseDataMap[code];
+    if (cruise) {
+      if (row.port_name && !cruise.itinerary.includes(row.port_name)) {
+        cruise.itinerary.push(row.port_name);
+      }
+      
+      cruise.itineraryDetailed.push({
+        day: parseInt(row.day) || cruise.itineraryDetailed.length + 1,
+        port: row.port_name,
+        description: row.port_description,
+        image: row.port_image ? `https://www.starclippers.com/${row.port_image}` : ""
+      });
+    }
+  });
+
+  return Object.values(cruiseDataMap).map(cruise => normalizeCruise(cruise, 'Star Clippers'));
+};
+
 const parseCosta = (xmlData) => {
   // Logic for Costa (SOAP/XML)
   const list = xmlData.Cruises?.Cruise || [];
@@ -135,8 +190,34 @@ const parseCosta = (xmlData) => {
 };
 
 const parseCroisiEurope = (csvData) => {
-  // Logic for CroisiEurope
-  return []; // Placeholder
+  if (!csvData) return [];
+  
+  // Basic CSV parsing for CroisiEurope
+  // Expected format: id;name;ship;destination;continent;departureDate;duration;price;image;description
+  const lines = csvData.split('\n');
+  const cruises = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    const [id, name, ship, destination, continent, departureDate, duration, price, image, description] = line.split(';');
+    
+    cruises.push(normalizeCruise({
+      id,
+      name,
+      ship,
+      destination,
+      continent,
+      departureDate,
+      duration,
+      price: parseFloat(price),
+      image,
+      description
+    }, 'CroisiEurope'));
+  }
+  
+  return cruises;
 };
 
 const parseAraNui = (xmlData) => {
@@ -148,6 +229,7 @@ const parseAraNui = (xmlData) => {
 module.exports = {
   normalizeCruise,
   parseStarClippers,
+  parseStarClippersCSV,
   parseCosta,
   parseCroisiEurope,
   parseAraNui

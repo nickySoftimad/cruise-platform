@@ -31,6 +31,15 @@ const CruiseSchema = new mongoose.Schema({
   gallery: [String]
 }, { timestamps: true });
 
+CruiseSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {
+    ret.id = ret._id;
+    return ret;
+  }
+});
+
 // Ensure uniqueness per provider
 CruiseSchema.index({ externalId: 1, provider: 1 }, { unique: true });
 

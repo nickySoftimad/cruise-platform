@@ -3,7 +3,6 @@ import { Routes, Route, Link, NavLink } from 'react-router-dom';
 import { Anchor, Globe, ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import CruiseListing from './pages/CruiseListing';
 import CruiseDetail from './pages/CruiseDetail';
-import AdminPanel from './pages/AdminPanel';
 
 function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -68,7 +67,6 @@ function App() {
       <Routes>
         <Route path="/" element={<CruiseListing />} />
         <Route path="/cruise/:id" element={<CruiseDetail />} />
-        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
 
       {/* ── INFO BANNER & LEAD GENERATION ──────────────── */}
@@ -230,7 +228,6 @@ function App() {
         </div>
         <div className="footer-bottom">
           <span>© 2026 Itinéraires du Monde. Tous droits réservés.</span>
-          <Link to="/admin" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Administration</Link>
         </div>
       </footer>
     </div>
