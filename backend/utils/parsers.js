@@ -16,12 +16,21 @@ const decodeHtml = (str) => {
  */
 
 const normalizeCruise = (data, provider) => {
-  const destinations = ["Méditerranée", "Caraïbes", "Asie du Sud-Est", "Europe du Nord", "Polynésie"];
+  const destinations = [
+    "Méditerranée", "Caraïbes", "Asie du Sud-Est", "Europe du Nord", 
+    "Polynésie", "Antarctique", "Îles Grecques", "Fjord de Norvège", "Côte Amalfitaine"
+  ];
+  const companies = [
+    "Star Clippers", "Costa Croisières", "CroisiEurope", "Ponant", 
+    "Silversea", "Odyssea Premium", "Excellence Nautique"
+  ];
+  
   const randomDest = destinations[Math.floor(Math.random() * destinations.length)];
+  const randomComp = companies[Math.floor(Math.random() * companies.length)];
   
   return {
     id: data.id || `${provider || 'P'}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    provider: provider || data.provider || "Partenaire Premium",
+    provider: provider || data.provider || randomComp,
     name: decodeHtml(data.name || data.title || "Croisière Grand Luxe"),
     ship: decodeHtml(data.ship || "Navire d'exception"),
     destination: decodeHtml(data.destination || randomDest),
