@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1,
+    "title": "Trésors de la Méditerranée Orientale",
+    "destination": "Grèce & Turquie",
+    "continent": "Europe",
+    "month": "Mai 2026",
+    "duration": "7 nuits",
+    "duration_days": 7,
+    "ship": "Star Flyer",
+    "price": 2450,
+    "itinerary": "Athènes - Mykonos - Santorin - Rhodes - Crète - Athènes",
+    "image": "https://images.unsplash.com/photo-1548574505-12c011f42698?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    "id": 2,
+    "title": "Caraïbes : Îles du Vent",
+    "destination": "Grenadines",
+    "continent": "Amérique",
+    "month": "Décembre 2025",
+    "duration": "7 nuits",
+    "duration_days": 7,
+    "ship": "Royal Clipper",
+    "price": 3100,
+    "itinerary": "Barbade - Sainte-Lucie - Dominique - Antigua - Saint-Barthélemy - Barbade",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    "id": 3,
+    "title": "Passage du Canal de Panama",
+    "destination": "Costa Rica & Panama",
+    "continent": "Amérique",
+    "month": "Novembre 2025",
+    "duration": "14 nuits",
+    "duration_days": 14,
+    "ship": "Star Clipper",
+    "price": 4580,
+    "itinerary": "Carthagène - Canal de Panama - Balboa - San Blas - Carthagène",
+    "image": "https://images.unsplash.com/photo-1517309230475-6736d926b979?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    "id": 4,
+    "title": "Escale en Corse et Riviera",
+    "destination": "Corse & Côte d'Azur",
+    "continent": "Europe",
+    "month": "Juin 2026",
+    "duration": "10 nuits",
+    "duration_days": 10,
+    "ship": "Star Flyer",
+    "price": 3200,
+    "itinerary": "Cannes - Calvi - Propiano - Bonifacio - Porto Vecchio - Bastia - Cannes",
+    "image": "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    "id": 5,
+    "title": "Polynésie Française : Atolls et Lagons",
+    "destination": "Polynésie",
+    "continent": "Asie-Pacifique",
+    "month": "Septembre 2025",
+    "duration": "11 nuits",
+    "duration_days": 11,
+    "ship": "Star Clipper",
+    "price": 5400,
+    "itinerary": "Papeete - Moorea - Bora Bora - Raiatea - Huahine - Papeete",
+    "image": "https://images.unsplash.com/photo-1544211107-df1600c5c4e9?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    "id": 6,
+    "title": "Méditerranée Occidentale & Baléares",
+    "destination": "Espagne & France",
+    "continent": "Europe",
+    "month": "Juillet 2026",
+    "duration": "7 nuits",
+    "duration_days": 7,
+    "ship": "Royal Clipper",
+    "price": 2850,
+    "itinerary": "Malaga - Ibiza - Palma de Majorque - Mahon - Saint-Tropez - Cannes",
+    "image": "https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=800&auto=format&fit=crop"
+  }
+]
