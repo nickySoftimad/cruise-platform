@@ -14,8 +14,11 @@ const PORT = process.env.PORT || 4000;
 const cache = new NodeCache({ stdTTL: 21600 }); // 6 hours
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 
+// CORS configuration - sanitize origin to avoid trailing slash issues
+const allowedOrigin = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, '') : '*';
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: allowedOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'password']
 }));
