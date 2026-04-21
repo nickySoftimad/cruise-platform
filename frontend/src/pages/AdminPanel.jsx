@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Settings, RefreshCw, Plus, CheckCircle, XCircle, Shield, X } from 'lucide-react';
+import { Settings, RefreshCw, Plus, CheckCircle, XCircle, Shield, X, Trash2, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
@@ -11,7 +11,9 @@ function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [syncing, setSyncing] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newProvider, setNewProvider] = useState({ id: '', name: '', url: '', type: 'xml', enabled: true });
+  const [newProvider, setNewProvider] = useState({ 
+    id: '', name: '', url: '', rateUrl: '', itineraryUrl: '', type: 'xml', enabled: true 
+  });
 
   useEffect(() => {
     if (isAuthenticated) fetchProviders();
@@ -28,6 +30,7 @@ function AdminPanel() {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    // In production, this should be a real auth call
     if (password === 'admin123') {
       setIsAuthenticated(true);
     } else {
@@ -49,6 +52,29 @@ function AdminPanel() {
     }
   };
 
+  const handleToggleProvider = async (id) => {
+    try {
+      await axios.put(`${API_URL}/admin/providers/${id}/toggle`, {}, {
+        headers: { password }
+      });
+      fetchProviders();
+    } catch (error) {
+      alert('Erreur lors du changement de statut');
+    }
+  };
+
+  const handleDeleteProvider = async (id) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur et toutes ses croisières ?')) return;
+    try {
+      await axios.delete(`${API_URL}/admin/providers/${id}`, {
+        headers: { password }
+      });
+      fetchProviders();
+    } catch (error) {
+      alert('Erreur lors de la suppression');
+    }
+  };
+
   const handleAddProvider = async (e) => {
     e.preventDefault();
     try {
@@ -56,7 +82,7 @@ function AdminPanel() {
         headers: { password }
       });
       setShowAddForm(false);
-      setNewProvider({ id: '', name: '', url: '', type: 'xml', enabled: true });
+      setNewProvider({ id: '', name: '', url: '', rateUrl: '', itineraryUrl: '', type: 'xml', enabled: true });
       fetchProviders();
     } catch (error) {
       alert('Erreur lors de l\'ajout');
@@ -112,22 +138,22 @@ function AdminPanel() {
             disabled={syncing === 'all'}
           >
             <RefreshCw size={16} className={syncing === 'all' ? 'spin' : ''} />
-            Rafraîchir tout le cache
+            Rafraîchir tout
           </button>
           <button className="btn-primary" onClick={() => setShowAddForm(true)}>
-            <Plus size={16} /> Ajouter un fournisseur
+            <Plus size={16} /> Nouveau
           </button>
         </div>
       </div>
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      <div className="admin-stats-grid">
         {[
           { label: 'Fournisseurs actifs', value: providers.filter(p => p.enabled).length },
-          { label: 'Croisières importées', value: providers.reduce((sum, p) => sum + (p.count || 0), 0) },
-          { label: 'Dernière synchro', value: providers.some(p => p.lastSync) ? 'Récente' : 'Jamais' },
+          { label: 'Croisières en base', value: providers.reduce((sum, p) => sum + (p.count || 0), 0) },
+          { label: 'État Système', value: 'Connecté' },
         ].map(({ label, value }) => (
-          <div key={label} style={{ background: 'white', border: '1px solid var(--border)', padding: '1.5rem 2rem', borderRadius: '6px' }}>
+          <div key={label} className="stat-card">
             <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700, color: 'var(--text-light)', marginBottom: '0.5rem' }}>{label}</div>
             <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 700, color: 'var(--navy)' }}>{value}</div>
           </div>
@@ -140,11 +166,11 @@ function AdminPanel() {
           <div key={provider.id} className="provider-item">
             <div className="provider-info">
               <h3>{provider.name}</h3>
-              <p className="provider-url">{provider.url}</p>
+              <p className="provider-url">{provider.url || provider.rateUrl || 'URLs multiple'}</p>
               <div className="provider-meta">
-                <span>Format: <strong style={{ color: 'var(--navy)' }}>{provider.type.toUpperCase()}</strong></span>
+                <span>Format: <strong style={{ color: 'var(--navy)' }}>{provider.type?.toUpperCase()}</strong></span>
                 <span>
-                  Dernière synchro:{' '}
+                  Synchronisé le :{' '}
                   <strong style={{ color: 'var(--navy)' }}>
                     {provider.lastSync
                       ? new Date(provider.lastSync).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -155,17 +181,32 @@ function AdminPanel() {
               </div>
             </div>
             <div className="provider-actions">
-              <span className={`status-badge ${provider.enabled ? 'active' : 'inactive'}`}>
+              <button 
+                className={`status-badge ${provider.enabled ? 'active' : 'inactive'}`} 
+                onClick={() => handleToggleProvider(provider.id)}
+                title={provider.enabled ? 'Désactiver' : 'Activer'}
+                style={{ border: 'none', cursor: 'pointer' }}
+              >
                 {provider.enabled ? <CheckCircle size={13} /> : <XCircle size={13} />}
                 {provider.enabled ? 'Actif' : 'Inactif'}
-              </span>
+              </button>
+              
               <button
                 className="btn-icon"
                 onClick={() => handleRefreshCache(provider.id)}
-                title="Rafraîchir ce fournisseur"
+                title="Synchroniser"
                 disabled={!!syncing}
               >
                 <RefreshCw size={16} className={syncing === provider.id ? 'spin' : ''} />
+              </button>
+
+              <button
+                className="btn-icon"
+                onClick={() => handleDeleteProvider(provider.id)}
+                title="Supprimer"
+                style={{ color: '#dc3545' }}
+              >
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
@@ -203,29 +244,60 @@ function AdminPanel() {
                 Nouveau fournisseur
               </h2>
               <form onSubmit={handleAddProvider} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {[
-                  { field: 'id', label: 'Identifiant unique (ex: starclippers)', type: 'text' },
-                  { field: 'name', label: 'Nom affiché', type: 'text' },
-                  { field: 'url', label: 'URL du flux XML/CSV', type: 'url' },
-                ].map(({ field, label, type }) => (
-                  <div key={field}>
-                    <label style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, color: 'var(--text-light)', display: 'block', marginBottom: '5px' }}>
-                      {label}
-                    </label>
+                <div key="id">
+                  <label className="admin-label">ID Unique</label>
+                  <input
+                    type="text"
+                    value={newProvider.id}
+                    onChange={e => setNewProvider(prev => ({ ...prev, id: e.target.value }))}
+                    required className="admin-input" placeholder="ex: ponant"
+                  />
+                </div>
+                <div key="name">
+                  <label className="admin-label">Nom Public</label>
+                  <input
+                    type="text"
+                    value={newProvider.name}
+                    onChange={e => setNewProvider(prev => ({ ...prev, name: e.target.value }))}
+                    required className="admin-input" placeholder="ex: Ponant"
+                  />
+                </div>
+                
+                {newProvider.id === 'starclippers' ? (
+                  <>
+                    <div key="rateUrl">
+                      <label className="admin-label">URL Tarifs (Star Clippers)</label>
+                      <input
+                        type="url"
+                        value={newProvider.rateUrl}
+                        onChange={e => setNewProvider(prev => ({ ...prev, rateUrl: e.target.value }))}
+                        required className="admin-input"
+                      />
+                    </div>
+                    <div key="itineraryUrl">
+                      <label className="admin-label">URL Itinéraires (Star Clippers)</label>
+                      <input
+                        type="url"
+                        value={newProvider.itineraryUrl}
+                        onChange={e => setNewProvider(prev => ({ ...prev, itineraryUrl: e.target.value }))}
+                        required className="admin-input"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div key="url">
+                    <label className="admin-label">URL du flux</label>
                     <input
-                      type={type}
-                      value={newProvider[field]}
-                      onChange={e => setNewProvider(prev => ({ ...prev, [field]: e.target.value }))}
-                      required
-                      className="admin-input"
-                      style={{ margin: 0 }}
+                      type="url"
+                      value={newProvider.url}
+                      onChange={e => setNewProvider(prev => ({ ...prev, url: e.target.value }))}
+                      required className="admin-input"
                     />
                   </div>
-                ))}
+                )}
+
                 <div>
-                  <label style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, color: 'var(--text-light)', display: 'block', marginBottom: '5px' }}>
-                    Format
-                  </label>
+                  <label className="admin-label">Format</label>
                   <select
                     value={newProvider.type}
                     onChange={e => setNewProvider(prev => ({ ...prev, type: e.target.value }))}

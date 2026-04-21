@@ -1,11 +1,12 @@
-import React from 'react';
 import { Routes, Route, Link, NavLink } from 'react-router-dom';
-import { Anchor, Globe, ChevronDown } from 'lucide-react';
+import { Anchor, Globe, ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import CruiseListing from './pages/CruiseListing';
 import CruiseDetail from './pages/CruiseDetail';
 import AdminPanel from './pages/AdminPanel';
 
 function App() {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   return (
     <div className="app-wrapper">
       {/* ── NAVBAR ─────────────────────────────────── */}
@@ -18,31 +19,47 @@ function App() {
             </div>
           </Link>
 
-          <ul className="navbar-links">
+          {/* Desktop Links - hidden on mobile via CSS, but we also handle the mobile version */}
+          <ul className={`navbar-links ${mobileMenuOpen ? 'mobile-active' : ''}`}>
             <li className="nav-item">
-              <a href="#">L'agence <ChevronDown size={14} /></a>
+              <a href="#" onClick={() => setMobileMenuOpen(false)}>L'agence <ChevronDown size={14} /></a>
             </li>
             <li className="nav-item">
-              <a href="#">Destinations <ChevronDown size={14} /></a>
+              <a href="#" onClick={() => setMobileMenuOpen(false)}>Destinations <ChevronDown size={14} /></a>
             </li>
             <li className="nav-item dropdown">
               <a href="#" className="dropdown-toggle">Types De Voyage <ChevronDown size={14} /></a>
               <ul className="dropdown-menu">
-                <li><NavLink to="/" end>Croisières</NavLink></li>
-                <li><a href="#">Circuits</a></li>
-                <li><a href="#">Séjours</a></li>
+                <li><NavLink to="/" end onClick={() => setMobileMenuOpen(false)}>Croisières</NavLink></li>
+                <li><a href="#" onClick={() => setMobileMenuOpen(false)}>Circuits</a></li>
+                <li><a href="#" onClick={() => setMobileMenuOpen(false)}>Séjours</a></li>
               </ul>
             </li>
             <li className="nav-item">
-              <a href="#">Conseils Aux Voyageurs</a>
+              <a href="#" onClick={() => setMobileMenuOpen(false)}>Conseils Aux Voyageurs</a>
+            </li>
+            
+            {/* Contact info in mobile menu */}
+            <li className="mobile-only-contact">
+              <a href="tel:+33493474006" className="phone-link">
+                TEL : 04 93 47 40 06
+              </a>
             </li>
           </ul>
 
-          <div className="nav-contact">
+          <div className="nav-contact desktop-only">
             <a href="tel:+33493474006" className="phone-link">
               TEL : 04 93 47 40 06
             </a>
           </div>
+
+          <button 
+            className="mobile-menu-toggle" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
+          </button>
         </div>
       </nav>
 
