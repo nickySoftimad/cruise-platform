@@ -63,7 +63,7 @@ const normalizeCruise = (data, provider) => {
 
 // High-quality default images for a premium look
 const DEFAULT_CRUISE_IMAGES = [
-  "https://images.unsplash.com/photo-1548574505-12c011f42698?auto=format&fit=crop&q=80&w=1200",
+  "https://images.unsplash.com/photo-1599640842225-85d111c60e6b?auto=format&fit=crop&q=80&w=1200",
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1200",
   "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=1200",
   "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?auto=format&fit=crop&q=80&w=1200",
