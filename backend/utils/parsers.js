@@ -75,57 +75,97 @@ const getRandomDefaultImage = () => {
 };
 
 const parseStarClippers = (rateXml, itineraryXml) => {
-  if (!itineraryXml) return [];
+  if (!rateXml || !itineraryXml) {
+    console.warn('parseStarClippers: Missing rate or itinerary data');
+    return [];
+  }
 
-  // 1. Map rates by cruise_code
-  const ratesMap = {};
-  const rateList = rateXml?.root?.item || [];
-  (Array.isArray(rateList) ? rateList : [rateList]).forEach(rate => {
-    const code = rate.cruise_code;
-    if (code && !ratesMap[code]) {
-      ratesMap[code] = parseFloat(rate.price) || 0;
-    }
-  });
+  // Handle potential variations in XML structure (e.g. root.item vs just root if single item)
+  const rateList = Array.isArray(rateXml.item) ? rateXml.item : (rateXml.item ? [rateXml.item] : []);
+  const itineraryItems = Array.isArray(itineraryXml.item) ? itineraryXml.item : (itineraryXml.item ? [itineraryXml.item] : []);
 
-  // 2. Group itineraries by cruise_code
-  const cruiseGroups = {};
-  const itineraryItems = itineraryXml?.root?.item || [];
+  const cruiseDataMap = {};
   
-  (Array.isArray(itineraryItems) ? itineraryItems : [itineraryItems]).forEach(item => {
-    const code = item.cruise_code;
+  // 1. Group rates by cruise_code and pick lowest price
+  rateList.forEach(row => {
+    const code = row.cruise_code;
     if (!code) return;
 
-    if (!cruiseGroups[code]) {
-      // Pick a random image for the cruise or use ship-specific if we had mapping
-      const randomImg = getRandomDefaultImage();
-      
-      cruiseGroups[code] = {
+    const price = parseFloat(row.brochure_price) || 0;
+    
+    if (!cruiseDataMap[code]) {
+      cruiseDataMap[code] = {
         id: code,
-        cruise_code: code,
-        name: item.itinerary,
-        ship: item.ship,
-        destination: item.itinerary.split(' à ').pop() || "Méditerranée",
-        departureDate: item.arrival_date,
-        price: ratesMap[code] || 0,
+        externalId: code,
+        name: decodeHtml(row.itinerary),
+        ship: decodeHtml(row.ship),
+        destination: decodeHtml(row.destination) || "Méditerranée",
+        continent: "Europe", 
+        departureDate: row.sdate,
+        durationDays: parseInt(row.nights),
+        price: price,
         itinerary: [],
         itineraryDetailed: [],
-        image: randomImg // Use high-quality random image as primary
+        image: getRandomDefaultImage()
       };
+    } else {
+      // Keep cheapest price if multiple categories exist for the same cruise code
+      if (price > 0 && (cruiseDataMap[code].price === 0 || price < cruiseDataMap[code].price)) {
+        cruiseDataMap[code].price = price;
+      }
     }
-
-    cruiseGroups[code].itinerary.push(item.port_name);
-    
-    cruiseGroups[code].itineraryDetailed.push({
-      day: item.day,
-      date: item.arrival_date,
-      port: item.port_name,
-      description: item.port_description,
-      // Keep the real port image as a fallback in the detailed view if needed
-      image: item.port_image ? `https://www.starclippers.com/${item.port_image}` : ""
-    });
   });
 
-  return Object.values(cruiseGroups).map(cruise => normalizeCruise(cruise, 'Star Clippers'));
+  // 2. Map itineraries and images to cruises using cruise_code as link
+  itineraryItems.forEach(row => {
+    const code = row.cruise_code;
+    const cruise = cruiseDataMap[code];
+    
+    // Even if cruise not in rates (rare), we might want to track it, 
+    // but the request focuses on merging rates + itineraries.
+    if (cruise) {
+      if (row.port_name && !cruise.itinerary.includes(row.port_name)) {
+        cruise.itinerary.push(decodeHtml(row.port_name));
+      }
+      
+      // Update cruise name if it's currently generic
+      if (row.itinerary && (!cruise.name || cruise.name === "Croisière Grand Luxe")) {
+        cruise.name = decodeHtml(row.itinerary);
+      }
+
+      // Prefix relative image paths with starclippers.com
+      const prefixUrl = (path) => {
+        if (!path) return "";
+        if (path.startsWith('http')) return path;
+        return `https://www.starclippers.com/${path.startsWith('/') ? path.substring(1) : path}`;
+      };
+
+      // Use itinerary_image as the main cruise image if available
+      if (row.itinerary_image && (!cruise.image || cruise.image.includes('unsplash'))) {
+        cruise.image = prefixUrl(row.itinerary_image);
+      }
+
+      // Save the map image
+      if (row.itinerary_map && !cruise.itineraryMap) {
+        cruise.itineraryMap = prefixUrl(row.itinerary_map);
+      }
+      
+      // Check if this port detail already added (avoid duplicates if itinerary XML has redundancies)
+      const isDuplicate = cruise.itineraryDetailed.some(d => d.port === row.port_name && d.dayName === row.day);
+      
+      if (!isDuplicate) {
+        cruise.itineraryDetailed.push({
+          day: cruise.itineraryDetailed.length + 1,
+          dayName: row.day, // e.g. "lundi"
+          port: decodeHtml(row.port_name),
+          description: decodeHtml(row.port_description),
+          image: prefixUrl(row.port_image)
+        });
+      }
+    }
+  });
+
+  return Object.values(cruiseDataMap).map(cruise => normalizeCruise(cruise, 'Star Clippers'));
 };
 
 const parseStarClippersCSV = (ratesJson, itinerariesJson) => {

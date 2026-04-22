@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const ItineraryItemSchema = new mongoose.Schema({
   day: Number,
+  dayName: String,
   port: String,
   description: String,
   image: String
