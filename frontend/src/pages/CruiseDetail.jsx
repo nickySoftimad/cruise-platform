@@ -115,9 +115,16 @@ function CruiseDetail() {
                       <div className="itinerary-dot" />
                       <div className="itinerary-connector" />
                     </div>
-                    <div style={{ paddingBottom: '1.5rem' }}>
-                      <div className="stop-name">{item.port}</div>
-                      <div className="stop-desc">{item.description}</div>
+                    <div style={{ paddingBottom: '2.5rem', flex: 1 }}>
+                      <div className="stop-name">{item.port} {item.dayName ? <span className="stop-day-name">— {item.dayName}</span> : ''}</div>
+                      <div className="itinerary-content-wrapper" style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                        {item.image && (
+                          <div className="stop-image-wrap" style={{ flex: '0 0 200px', maxWidth: '100%' }}>
+                            <img src={item.image} alt={item.port} style={{ width: '100%', borderRadius: '8px', objectFit: 'cover', height: '120px' }} />
+                          </div>
+                        )}
+                        <div className="stop-desc" style={{ flex: 1, minWidth: '250px' }}>{item.description}</div>
+                      </div>
                     </div>
                   </div>
                 ))}
