@@ -12,12 +12,24 @@ function SearchEngine({ filters, setFilters, continents, providers, sort, setSor
       <div className="search-container">
         <div className="search-grid">
 
+          {/* Keyword Search */}
+          <div className="search-field">
+            <label><Search size={13} /> Mots-clés</label>
+            <input
+              type="text"
+              name="q"
+              placeholder="Ex : Méditerranée, voilier..."
+              value={filters.q || ''}
+              onChange={handleChange}
+            />
+          </div>
+
           {/* Continent */}
           <div className="search-field">
             <label><MapPin size={13} /> Destination</label>
             <select name="continent" value={filters.continent} onChange={handleChange}>
               {continents.map(c => (
-                <option key={c} value={c}>{c === 'All' ? 'Tous les continents' : c}</option>
+                <option key={c} value={c}>{c === 'All' ? 'Toutes les destinations' : c}</option>
               ))}
             </select>
           </div>

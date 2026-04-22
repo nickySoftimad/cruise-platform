@@ -43,6 +43,14 @@ CruiseSchema.set('toJSON', {
   }
 });
 
+// Optimization indexes
+CruiseSchema.index({ continent: 1 });
+CruiseSchema.index({ provider: 1 });
+CruiseSchema.index({ price: 1 });
+CruiseSchema.index({ departureDate: 1 });
+CruiseSchema.index({ durationDays: 1 });
+CruiseSchema.index({ name: 'text', description: 'text' });
+
 // Ensure uniqueness per provider
 CruiseSchema.index({ externalId: 1, provider: 1 }, { unique: true });
 

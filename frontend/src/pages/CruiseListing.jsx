@@ -14,7 +14,8 @@ function CruiseListing() {
     continent: 'All',
     provider: 'All',
     duration: 'All',
-    maxPrice: ''
+    maxPrice: '',
+    q: ''
   });
   const [sort, setSort] = useState('default');
 
@@ -45,7 +46,13 @@ function CruiseListing() {
       if (filters.duration === 'Medium') matchDur = c.durationDays > 7 && c.durationDays <= 12;
       if (filters.duration === 'Long') matchDur = c.durationDays > 12;
       const matchPrice = !filters.maxPrice || c.price <= parseInt(filters.maxPrice);
-      return matchCont && matchProv && matchDur && matchPrice;
+      
+      const matchSearch = !filters.q || 
+        c.name.toLowerCase().includes(filters.q.toLowerCase()) ||
+        c.destination.toLowerCase().includes(filters.q.toLowerCase()) ||
+        c.ship.toLowerCase().includes(filters.q.toLowerCase());
+
+      return matchCont && matchProv && matchDur && matchPrice && matchSearch;
     });
 
     if (sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
@@ -145,7 +152,7 @@ function CruiseListing() {
             <p>Modifiez vos critères de recherche pour voir plus de résultats.</p>
             <span
               className="reset-link"
-              onClick={() => setFilters({ continent: 'All', provider: 'All', duration: 'All', maxPrice: '' })}
+              onClick={() => setFilters({ continent: 'All', provider: 'All', duration: 'All', maxPrice: '', q: '' })}
             >
               Réinitialiser les filtres
             </span>

@@ -89,14 +89,31 @@ const syncProviderData = async (provider) => {
 // Routes
 app.get('/api/cruises', async (req, res) => {
   try {
-    // Optimization: Don't send detailed itinerary in the listing to save bandwidth
-    let cruises = await Cruise.find({}, { itineraryDetailed: 0, cabins: 0, gallery: 0 }).sort({ departureDate: 1 });
+    const { continent, provider, maxPrice, q, sort, limit = 100 } = req.query;
+    const query = {};
 
-    // If DB is empty, maybe try to sync
-    if (cruises.length === 0) {
+    if (continent && continent !== 'All') query.continent = continent;
+    if (provider && provider !== 'All') query.provider = provider;
+    if (maxPrice) query.price = { $lte: parseFloat(maxPrice) };
+    if (q) query.$text = { $search: q };
+
+    let sortOptions = { departureDate: 1 };
+    if (sort === 'price-asc') sortOptions = { price: 1 };
+    if (sort === 'price-desc') sortOptions = { price: -1 };
+    if (sort === 'duration') sortOptions = { durationDays: 1 };
+
+    let cruises = await Cruise.find(query, { 
+      itineraryDetailed: 0, 
+      cabins: 0, 
+      gallery: 0 
+    })
+    .sort(sortOptions)
+    .limit(parseInt(limit));
+
+    // If DB is empty and no filters applied, maybe try to sync
+    if (cruises.length === 0 && Object.keys(req.query).length === 0) {
       const providers = await Provider.find({ enabled: true });
       if (providers.length > 0) {
-        console.log("No cruises in DB. Triggering initial sync...");
         await Promise.all(providers.map(p => syncProviderData(p)));
         cruises = await Cruise.find({}, { itineraryDetailed: 0, cabins: 0, gallery: 0 }).sort({ departureDate: 1 });
       }
