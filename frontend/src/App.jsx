@@ -157,18 +157,26 @@ function App() {
       <footer className="footer">
         <div className="footer-newsletter">
           <div className="container">
-            <h2>Ne ratez pas le prochain départ</h2>
-            <p>Inscrivez-vous à notre lettre d’information pour recevoir nos idées d’évasions, et nos prochaines destinations.</p>
-            <form className="footer-newsletter-form">
-              <div className="form-group">
-                <input type="email" placeholder="Votre email" />
-              </div>
-              <div className="form-consent">
-                <input type="checkbox" id="footer-consent" />
-                <label htmlFor="footer-consent">En cochant cette case, j'accepte d'être informé sur les prochaines promotions et voyages</label>
-              </div>
-              <button type="submit" className="btn-subscribe">S'ABONNER</button>
-            </form>
+            <div className="newsletter-content">
+              <h2>Ne ratez pas le prochain départ</h2>
+              <p>Inscrivez-vous à notre lettre d’information pour recevoir nos idées d’évasions, et nos prochaines destinations.</p>
+              
+              <form className="footer-newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Merci de votre inscription !'); }}>
+                <div className="newsletter-input-group">
+                  <input type="email" placeholder="Votre adresse e-mail" required />
+                  <button type="submit" className="btn-subscribe">S'ABONNER</button>
+                </div>
+                
+                <div className="form-consent">
+                  <div className="checkbox-wrapper">
+                    <input type="checkbox" id="footer-consent" required />
+                    <label htmlFor="footer-consent">
+                      En cochant cette case, j'accepte d'être informé sur les prochaines promotions et voyages
+                    </label>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
 
