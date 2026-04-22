@@ -36,6 +36,7 @@ const normalizeCruise = (data, provider) => {
       ? data.itinerary.map(decodeHtml)
       : (typeof data.itinerary === 'string' ? data.itinerary.split(' - ').map(decodeHtml) : []),
     image: data.image || "https://images.unsplash.com/photo-1548574505-12c011f42698?auto=format&fit=crop&q=80&w=800",
+    itineraryMap: data.itineraryMap || "",
     description: decodeHtml(data.description || ""),
     itineraryDetailed: (data.itineraryDetailed || []).map(item => ({
       ...item,
@@ -80,10 +81,11 @@ const parseStarClippers = (rateXml, itineraryXml) => {
         destination: decodeHtml(row.destination) || "Méditerranée",
         continent: "Europe", 
         departureDate: row.sdate,
-        durationDays: parseInt(row.nights),
+        duration_days: parseInt(row.nights),
         price: price,
         itinerary: [],
         itineraryDetailed: [],
+        cabins: [],
         image: DEFAULT_CRUISE_IMAGE
       };
     } else {
@@ -92,6 +94,14 @@ const parseStarClippers = (rateXml, itineraryXml) => {
         cruiseDataMap[code].price = price;
       }
     }
+
+    // Add cabin category
+    if (row.cabin_grade && price > 0) {
+      cruiseDataMap[code].cabins.push({
+        category: decodeHtml(row.cabin_grade),
+        price: price
+      });
+    }
   });
 
   // 2. Map itineraries and images to cruises using cruise_code as link
@@ -99,8 +109,6 @@ const parseStarClippers = (rateXml, itineraryXml) => {
     const code = row.cruise_code;
     const cruise = cruiseDataMap[code];
     
-    // Even if cruise not in rates (rare), we might want to track it, 
-    // but the request focuses on merging rates + itineraries.
     if (cruise) {
       if (row.port_name && !cruise.itinerary.includes(row.port_name)) {
         cruise.itinerary.push(decodeHtml(row.port_name));
@@ -135,13 +143,13 @@ const parseStarClippers = (rateXml, itineraryXml) => {
         cruise.itineraryMap = prefixUrl(row.itinerary_map);
       }
       
-      // Check if this port detail already added (avoid duplicates if itinerary XML has redundancies)
+      // Check if this port detail already added
       const isDuplicate = cruise.itineraryDetailed.some(d => d.port === row.port_name && d.dayName === row.day);
       
       if (!isDuplicate) {
         cruise.itineraryDetailed.push({
           day: cruise.itineraryDetailed.length + 1,
-          dayName: row.day, // e.g. "lundi"
+          dayName: row.day,
           port: decodeHtml(row.port_name),
           description: decodeHtml(row.port_description),
           image: prefixUrl(row.port_image)
@@ -173,10 +181,11 @@ const parseStarClippersCSV = (ratesJson, itinerariesJson) => {
         destination: row.destination || "Méditerranée",
         continent: row.region || "Europe",
         departureDate: row.sdate,
-        durationDays: parseInt(row.nights),
+        duration_days: parseInt(row.nights),
         price: price,
         itinerary: [],
         itineraryDetailed: [],
+        cabins: [],
         image: DEFAULT_CRUISE_IMAGE
       };
     } else {
@@ -184,6 +193,14 @@ const parseStarClippersCSV = (ratesJson, itinerariesJson) => {
       if (price > 0 && (cruiseDataMap[code].price === 0 || price < cruiseDataMap[code].price)) {
         cruiseDataMap[code].price = price;
       }
+    }
+
+    // Add cabin category
+    if (row.cabin_grade && price > 0) {
+      cruiseDataMap[code].cabins.push({
+        category: row.cabin_grade,
+        price: price
+      });
     }
   });
 

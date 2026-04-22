@@ -149,6 +149,31 @@ function CruiseDetail() {
               </div>
             </div>
           )}
+          {/* Itinerary Map Section */}
+          {cruise.itineraryMap && (
+            <div className="detail-section">
+              <h2>Itinéraire de la croisière</h2>
+              <div className="map-container" style={{ 
+                background: 'white', 
+                padding: '1.5rem', 
+                borderRadius: '8px', 
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-sm)',
+                overflow: 'hidden'
+              }}>
+                <img 
+                  src={cruise.itineraryMap} 
+                  alt="Carte de l'itinéraire" 
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto', 
+                    borderRadius: '4px',
+                    display: 'block'
+                  }} 
+                />
+              </div>
+            </div>
+          )}
 
           {/* Cabin pricing */}
           {cruise.cabins?.length > 0 && (
