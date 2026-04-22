@@ -16,9 +16,8 @@ function CruiseDetail() {
   useEffect(() => {
     const fetchCruise = async () => {
       try {
-        const response = await axios.get(`${API_URL}/cruises`);
-        const found = response.data.find(c => c.id === id);
-        setCruise(found);
+        const response = await axios.get(`${API_URL}/cruises/${id}`);
+        setCruise(response.data);
       } catch (error) {
         console.error('Error fetching cruise details:', error);
       } finally {

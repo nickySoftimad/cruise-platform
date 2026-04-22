@@ -113,17 +113,24 @@ const parseStarClippers = (rateXml, itineraryXml) => {
 
       // Prefix relative image paths with starclippers.com
       const prefixUrl = (path) => {
-        if (!path) return "";
+        if (!path || typeof path !== 'string') return "";
         if (path.startsWith('http')) return path;
         return `https://www.starclippers.com/${path.startsWith('/') ? path.substring(1) : path}`;
       };
 
-      // Use itinerary_image as the main cruise image if available
-      if (row.itinerary_image && (!cruise.image || cruise.image.includes('unsplash'))) {
+      // Priority for the main cruise image:
+      // 1. itinerary_image
+      // 2. port_image (of any port found)
+      // 3. itinerary_map
+      if (row.itinerary_image) {
         cruise.image = prefixUrl(row.itinerary_image);
+      } else if (row.port_image && (!cruise.image || cruise.image.includes('unsplash'))) {
+        cruise.image = prefixUrl(row.port_image);
+      } else if (row.itinerary_map && (!cruise.image || cruise.image.includes('unsplash'))) {
+        cruise.image = prefixUrl(row.itinerary_map);
       }
 
-      // Save the map image
+      // Save the map image explicitly too
       if (row.itinerary_map && !cruise.itineraryMap) {
         cruise.itineraryMap = prefixUrl(row.itinerary_map);
       }

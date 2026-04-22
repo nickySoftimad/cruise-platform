@@ -89,19 +89,36 @@ const syncProviderData = async (provider) => {
 // Routes
 app.get('/api/cruises', async (req, res) => {
   try {
-    let cruises = await Cruise.find().sort({ createdAt: -1 });
+    // Optimization: Don't send detailed itinerary in the listing to save bandwidth
+    let cruises = await Cruise.find({}, { itineraryDetailed: 0, cabins: 0, gallery: 0 }).sort({ departureDate: 1 });
 
-    // If DB is empty, maybe try to sync or return something
+    // If DB is empty, maybe try to sync
     if (cruises.length === 0) {
       const providers = await Provider.find({ enabled: true });
       if (providers.length > 0) {
         console.log("No cruises in DB. Triggering initial sync...");
         await Promise.all(providers.map(p => syncProviderData(p)));
-        cruises = await Cruise.find().sort({ createdAt: -1 });
+        cruises = await Cruise.find({}, { itineraryDetailed: 0, cabins: 0, gallery: 0 }).sort({ departureDate: 1 });
       }
     }
 
     res.json(cruises);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a single cruise with full details
+app.get('/api/cruises/:id', async (req, res) => {
+  try {
+    const cruise = await Cruise.findById(req.params.id);
+    if (!cruise) {
+      // Try to find by externalId if not found by MongoDB ID
+      const cruiseByExt = await Cruise.findOne({ externalId: req.params.id });
+      if (!cruiseByExt) return res.status(404).json({ error: 'Cruise not found' });
+      return res.json(cruiseByExt);
+    }
+    res.json(cruise);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
