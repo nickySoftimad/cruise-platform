@@ -47,7 +47,24 @@ function CruiseDetail() {
     </div>
   );
 
-  const images = cruise.gallery?.length ? [cruise.image, ...cruise.gallery] : [cruise.image];
+  // Collect all unique images with their labels (port names)
+  const allImages = [
+    { url: cruise.image, label: "Vue principale" },
+    ...(cruise.gallery || []).map(url => ({ url, label: cruise.name })),
+    ...(cruise.itineraryDetailed || [])
+      .filter(item => item.image)
+      .map(item => ({ url: item.image, label: item.port }))
+  ];
+
+  // Deduplicate by URL
+  const images = [];
+  const seenUrls = new Set();
+  allImages.forEach(img => {
+    if (img.url && typeof img.url === 'string' && !seenUrls.has(img.url)) {
+      images.push(img);
+      seenUrls.add(img.url);
+    }
+  });
 
   return (
     <motion.div
@@ -72,22 +89,30 @@ function CruiseDetail() {
         {/* LEFT COLUMN */}
         <div className="detail-main">
           {/* Gallery */}
-          <div className="detail-gallery">
-            <img
-              src={images[activeImg]}
-              alt={cruise.name}
-              className="main-image"
-            />
+           <div className="detail-gallery">
+            <div className="main-image-wrapper">
+              <img
+                src={images[activeImg]?.url}
+                alt={images[activeImg]?.label}
+                className="main-image"
+              />
+              {images[activeImg]?.label && (
+                <div className="image-caption">
+                  <MapPin size={14} />
+                  <span>{images[activeImg].label}</span>
+                </div>
+              )}
+            </div>
             {images.length > 1 && (
               <div className="gallery-thumbs">
                 {images.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt={`Vue ${i + 1}`}
-                    className={`gallery-thumb ${activeImg === i ? 'active' : ''}`}
-                    onClick={() => setActiveImg(i)}
-                  />
+                     <img
+                      key={i}
+                      src={img.url}
+                      alt={img.label}
+                      className={`gallery-thumb ${activeImg === i ? 'active' : ''}`}
+                      onClick={() => setActiveImg(i)}
+                    />
                 ))}
               </div>
             )}
@@ -115,16 +140,9 @@ function CruiseDetail() {
                       <div className="itinerary-dot" />
                       <div className="itinerary-connector" />
                     </div>
-                    <div style={{ paddingBottom: '2.5rem', flex: 1 }}>
+                     <div style={{ paddingBottom: '1.5rem', flex: 1 }}>
                       <div className="stop-name">{item.port} {item.dayName ? <span className="stop-day-name">— {item.dayName}</span> : ''}</div>
-                      <div className="itinerary-content-wrapper" style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                        {item.image && (
-                          <div className="stop-image-wrap" style={{ flex: '0 0 200px', maxWidth: '100%' }}>
-                            <img src={item.image} alt={item.port} style={{ width: '100%', borderRadius: '8px', objectFit: 'cover', height: '120px' }} />
-                          </div>
-                        )}
-                        <div className="stop-desc" style={{ flex: 1, minWidth: '250px' }}>{item.description}</div>
-                      </div>
+                      <div className="stop-desc" style={{ marginTop: '0.5rem' }}>{item.description}</div>
                     </div>
                   </div>
                 ))}
