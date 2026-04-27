@@ -18,6 +18,21 @@ function CruiseListing() {
     q: ''
   });
   const [sort, setSort] = useState('default');
+  const heroImages = useMemo(() => [
+    "https://itinerairesdumonde.com/wp-content/uploads/2021/06/car-color-contrast-1660990.jpg",
+    "https://itinerairesdumonde.com/wp-content/uploads/2021/05/etats-unis-70.jpg",
+    "https://itinerairesdumonde.com/wp-content/uploads/2021/05/oman15.jpg",
+    "https://itinerairesdumonde.com/wp-content/uploads/2020/04/danakilethiopie1.jpg"
+  ], []);
+
+  const [currentHeroImage, setCurrentHeroImage] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroImage(prev => (prev + 1) % heroImages.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
 
   useEffect(() => {
     axios.get(`${API_URL}/cruises`)
@@ -46,8 +61,8 @@ function CruiseListing() {
       if (filters.duration === 'Medium') matchDur = c.durationDays > 7 && c.durationDays <= 12;
       if (filters.duration === 'Long') matchDur = c.durationDays > 12;
       const matchPrice = !filters.maxPrice || c.price <= parseInt(filters.maxPrice);
-      
-      const matchSearch = !filters.q || 
+
+      const matchSearch = !filters.q ||
         c.name.toLowerCase().includes(filters.q.toLowerCase()) ||
         c.destination.toLowerCase().includes(filters.q.toLowerCase()) ||
         c.ship.toLowerCase().includes(filters.q.toLowerCase());
@@ -80,29 +95,50 @@ function CruiseListing() {
     <>
       {/* HERO */}
       <section className="hero-section">
-        <div className="hero-bg" />
-        <div className="hero-content">
+        <div className="hero-slideshow-container">
+          <AnimatePresence>
+            <motion.div
+              key={currentHeroImage}
+              initial={{ opacity: 0, scale: 1 }}
+              animate={{ opacity: 1, scale: 1.15 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                opacity: { duration: 1.5 },
+                scale: { duration: 8, ease: "linear" }
+              }}
+              className="hero-slideshow-image"
+              style={{ backgroundImage: `url(${heroImages[currentHeroImage]})` }}
+            />
+          </AnimatePresence>
+          <div className="hero-slideshow-overlay" />
+        </div>
+
+        <motion.div
+          className="hero-content"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+        >
           <p className="hero-eyebrow">Expertise & Passion</p>
-          <motion.h1
+          <motion.h2
             className="hero-title"
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
             L'art de voyager <em>autrement</em>,<br />sur toutes les mers du monde
-          </motion.h1>
+          </motion.h2>
           <motion.p
             className="hero-subtitle"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.7 }}
           >
-            Partez pour une aventure inoubliable, entre élégance et exploration. 
-            Nos croisières sont rigoureusement sélectionnées pour vous offrir des 
-            expériences uniques — escales exclusives, confort raffiné, itinéraires 
+            Partez pour une aventure inoubliable, entre élégance et exploration.
+            Nos croisières sont rigoureusement sélectionnées pour vous offrir des
+            expériences uniques — escales exclusives, confort raffiné, itinéraires
             riches en découvertes culturelles.
           </motion.p>
-        </div>
+        </motion.div>
       </section>
 
       {/* SEARCH ENGINE */}
@@ -120,7 +156,7 @@ function CruiseListing() {
         <div className="section-header">
           <p className="section-label">Nos Compagnies Partenaires</p>
           <h2>Consulter nos croisières</h2>
-          
+
           {!loading && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: '1rem 0' }}>
               {providers.filter(p => p !== 'All').map(p => (
@@ -176,8 +212,8 @@ function CruiseListing() {
 
             {visibleCount < filteredCruises.length && (
               <div className="load-more-container">
-                <button 
-                  className={`btn-load-more ${isMoreLoading ? 'loading' : ''}`} 
+                <button
+                  className={`btn-load-more ${isMoreLoading ? 'loading' : ''}`}
                   onClick={handleLoadMore}
                   disabled={isMoreLoading}
                 >

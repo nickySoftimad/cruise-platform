@@ -39,7 +39,7 @@ function CruiseDetail() {
 
   if (!cruise) return (
     <div className="error-state">
-      <ChevronLeft style={{ margin: '0 auto 1rem', opacity: 0.3 }}  size={40} />
+      <ChevronLeft style={{ margin: '0 auto 1rem', opacity: 0.3 }} size={40} />
       <p>Croisière introuvable.</p>
       <button className="btn-primary" style={{ marginTop: '1.5rem' }} onClick={() => navigate('/')}>
         Retour à la liste
@@ -89,7 +89,7 @@ function CruiseDetail() {
         {/* LEFT COLUMN */}
         <div className="detail-main">
           {/* Gallery */}
-           <div className="detail-gallery">
+          <div className="detail-gallery">
             <div className="main-image-wrapper">
               <img
                 src={images[activeImg]?.url}
@@ -106,13 +106,13 @@ function CruiseDetail() {
             {images.length > 1 && (
               <div className="gallery-thumbs">
                 {images.map((img, i) => (
-                     <img
-                      key={i}
-                      src={img.url}
-                      alt={img.label}
-                      className={`gallery-thumb ${activeImg === i ? 'active' : ''}`}
-                      onClick={() => setActiveImg(i)}
-                    />
+                  <img
+                    key={i}
+                    src={img.url}
+                    alt={img.label}
+                    className={`gallery-thumb ${activeImg === i ? 'active' : ''}`}
+                    onClick={() => setActiveImg(i)}
+                  />
                 ))}
               </div>
             )}
@@ -140,7 +140,7 @@ function CruiseDetail() {
                       <div className="itinerary-dot" />
                       <div className="itinerary-connector" />
                     </div>
-                     <div style={{ paddingBottom: '1.5rem', flex: 1 }}>
+                    <div style={{ paddingBottom: '1.5rem', flex: 1 }}>
                       <div className="stop-name">{item.port} {item.dayName ? <span className="stop-day-name">— {item.dayName}</span> : ''}</div>
                       <div className="stop-desc" style={{ marginTop: '0.5rem' }}>{item.description}</div>
                     </div>
@@ -153,23 +153,23 @@ function CruiseDetail() {
           {cruise.itineraryMap && (
             <div className="detail-section">
               <h2>Itinéraire de la croisière</h2>
-              <div className="map-container" style={{ 
-                background: 'white', 
-                padding: '1.5rem', 
-                borderRadius: '8px', 
+              <div className="map-container" style={{
+                background: 'white',
+                padding: '1.5rem',
+                borderRadius: '8px',
                 border: '1px solid var(--border)',
                 boxShadow: 'var(--shadow-sm)',
                 overflow: 'hidden'
               }}>
-                <img 
-                  src={cruise.itineraryMap} 
-                  alt="Carte de l'itinéraire" 
-                  style={{ 
-                    width: '100%', 
-                    height: 'auto', 
+                <img
+                  src={cruise.itineraryMap}
+                  alt="Carte de l'itinéraire"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
                     borderRadius: '4px',
                     display: 'block'
-                  }} 
+                  }}
                 />
               </div>
             </div>
